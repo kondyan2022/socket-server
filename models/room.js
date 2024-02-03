@@ -1,8 +1,10 @@
 const { Schema, model } = require("mongoose");
 
 const roomSchema = new Schema({
-  name: String,
-  id: String,
+  roomId: String,
+  socketId: String,
+  guestOnline: { type: Boolean, default: false },
+  operatorOnline: { type: Boolean, default: false },
 });
 
 const Room = model("room", roomSchema);
