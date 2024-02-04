@@ -3,22 +3,23 @@ const { Room } = require("../../models");
 
 module.exports = class ConnectionController extends BaseController {
   disconnect = async () => {
-    console.log(this.socket.rooms, "full disconect");
-    const room = await Room.findOne(
-      { socketId: this.socket.id }
-      //   { guestOnline: false }
-    );
+    console.log("full disconnect");
+    const room = await Room.findOne({ socketId: this.socket.id });
+    console.log(room);
     if (!room) {
-      this.socket.emit("operator-leave-room");
       this.store.operatorOnline.clear();
-
-      //   await Room.updateMany(
-      //     { operatorOnline: true },
-      //     { operatorOnline: false }
-      //   );
+      this.socket.broadcast.emit("operator-leave-room");
     } else {
       this.store.userOnline.delete(room.roomId);
       this.socket.to(room.roomId).emit("user-leave-room", room.roomId);
+      if (
+        room?.messages.length === 0 &&
+        !this.store.operatorOnline.has(room.roomId)
+      ) {
+        console.log("delete room ");
+        await room.deleteOne();
+        this.socket.broadcast.emit("refresh-rooms");
+      }
     }
     this.socket.broadcast.emit("refresh-online", {
       operator: Array.from(this.store.operatorOnline),

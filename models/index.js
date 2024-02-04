@@ -1,3 +1,3 @@
 const Room = require("./room");
-
-module.exports = { Room };
+const Message = require("./message");
+module.exports = { Room, Message };
